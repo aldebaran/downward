@@ -324,7 +324,7 @@ def _convert_limits_to_ints(parser, args):
         set_memory_limit_in_bytes(parser, args, component)
 
 
-def parse_args():
+def parse_args(argv = None):
     parser = argparse.ArgumentParser(
         description=DESCRIPTION, epilog=EPILOG,
         formatter_class=RawHelpFormatter,
@@ -428,7 +428,7 @@ def parse_args():
     # can be used as an explicit separator. For example, "./fast-downward.py --
     # --help" passes "--help" to the search code.
 
-    args = parser.parse_args()
+    args = parser.parse_args() if argv is None else parser.parse_args(argv)
 
     if args.sas_file:
         args.keep_sas_file = True
