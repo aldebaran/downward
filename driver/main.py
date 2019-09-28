@@ -9,8 +9,8 @@ from . import run_components
 from . import __version__
 
 
-def main():
-    args = arguments.parse_args()
+def main(argv=None):
+    args = arguments.parse_args(argv)
     logging.basicConfig(level=getattr(logging, args.log_level.upper()),
                         format="%(levelname)-8s %(message)s",
                         stream=sys.stdout)
