@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 
+from io import StringIO
 import os
 import sys
 import traceback
@@ -678,6 +679,28 @@ def dump_statistics(sas_task):
     else:
         print("Translator peak memory: %d KB" % peak_memory)
 
+def translate(
+        domain_path, problem_path,
+        sas_file = "",
+        dump_task = False,
+        filter_unreachable_facts = True,
+        add_implied_preconditions = False,
+        reorder_variables = True,
+        generate_relaxed_task = False,
+        invariant_generation_max_candidates = 100000,
+        invariant_generation_max_time = 300):
+
+    options.domain = domain_path
+    options.task = problem_path
+    options.sas_file = sas_file
+    options.dump_task = dump_task
+    options.filter_unreachable_facts = filter_unreachable_facts
+    options.add_implied_preconditions = add_implied_preconditions
+    options.reorder_variables = reorder_variables
+    options.generate_relaxed_task = generate_relaxed_task
+    options.invariant_generation_max_candidates = invariant_generation_max_candidates
+    options.invariant_generation_max_time = invariant_generation_max_time
+    return main()
 
 def main():
     timer = timers.Timer()
@@ -699,10 +722,13 @@ def main():
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
-        with open(options.sas_file, "w") as output_file:
-            sas_task.output(output_file)
+        if len(options.sas_file) != 0:
+            with open(options.sas_file, "w") as output_file:
+                sas_task.output(output_file)
     print("Done! %s" % timer)
-
+    str_out = StringIO()
+    sas_task.output(str_out)
+    return str_out.getvalue()
 
 def handle_sigxcpu(signum, stackframe):
     print()
