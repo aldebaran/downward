@@ -679,34 +679,11 @@ def dump_statistics(sas_task):
     else:
         print("Translator peak memory: %d KB" % peak_memory)
 
-def translate(
-        domain_path, problem_path,
-        sas_file = "",
-        dump_task = False,
-        filter_unreachable_facts = True,
-        add_implied_preconditions = False,
-        reorder_variables = True,
-        generate_relaxed_task = False,
-        invariant_generation_max_candidates = 100000,
-        invariant_generation_max_time = 300):
-
-    options.domain = domain_path
-    options.task = problem_path
-    options.sas_file = sas_file
-    options.dump_task = dump_task
-    options.filter_unreachable_facts = filter_unreachable_facts
-    options.add_implied_preconditions = add_implied_preconditions
-    options.reorder_variables = reorder_variables
-    options.generate_relaxed_task = generate_relaxed_task
-    options.invariant_generation_max_candidates = invariant_generation_max_candidates
-    options.invariant_generation_max_time = invariant_generation_max_time
-    return main()
-
-def main():
+def translate_using_options():
+    """Translate the given PDDL into SAS, using the global options set."""
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl_parser.open(
-            domain_filename=options.domain, task_filename=options.task)
+        task = pddl_parser.parse_pddl_streams(options.domain_stream, options.task_stream)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
@@ -729,6 +706,50 @@ def main():
     str_out = StringIO()
     sas_task.output(str_out)
     return str_out.getvalue()
+
+def translate(
+        domain_stream, task_stream,
+        domain_path = "", task_path = "",
+        sas_file = "",
+        dump_task = False,
+        use_partial_encoding = False,
+        filter_unreachable_facts = True,
+        filter_unimportant_vars = True,
+        add_implied_preconditions = False,
+        reorder_variables = True,
+        generate_relaxed_task = False,
+        invariant_generation_max_candidates = 100000,
+        invariant_generation_max_time = 300,
+        layer_strategy = "min"):
+    """Translate the given PDDL streams into SAS."""
+
+    options.domain_stream = domain_stream
+    options.task_stream = task_stream
+    options.domain = domain_path
+    options.task = task_path
+    options.sas_file = sas_file
+    options.dump_task = dump_task
+    options.use_partial_encoding = use_partial_encoding
+    options.filter_unreachable_facts = filter_unreachable_facts
+    options.filter_unimportant_vars = filter_unimportant_vars
+    options.add_implied_preconditions = add_implied_preconditions
+    options.reorder_variables = reorder_variables
+    options.generate_relaxed_task = generate_relaxed_task
+    options.invariant_generation_max_candidates = invariant_generation_max_candidates
+    options.invariant_generation_max_time = invariant_generation_max_time
+    options.layer_strategy = layer_strategy
+    return translate_using_options()
+
+def translate_from_strings(domain, task):
+    """Translate the given PDDL into SAS, from a string and using default options."""
+    return translate(domain.splitlines(), task.splitlines())
+
+def main():
+    """Translates using the the command-line arguments."""
+    options.parse_args_and_copy_to_module()
+    options.domain_stream = open(options.domain, 'r')
+    options.task_stream = open(options.task, 'r')
+    translate_using_options()
 
 def handle_sigxcpu(signum, stackframe):
     print()

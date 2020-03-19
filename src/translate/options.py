@@ -66,9 +66,7 @@ def copy_args_to_module(args):
         module_dict[key] = value
 
 
-def setup():
+def parse_args_and_copy_to_module():
     args = parse_args()
     copy_args_to_module(args)
 
-
-setup()
