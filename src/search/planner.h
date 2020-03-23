@@ -1,8 +1,10 @@
-//
-// Created by victor.paleologue on 19/03/20.
-//
+#ifndef PLANNER_H
+#define PLANNER_H
 
-#ifndef PDDL_SANDBOX_PLANNER_H
-#define PDDL_SANDBOX_PLANNER_H
+#include <string>
 
-#endif //PDDL_SANDBOX_PLANNER_H
+#define EXPORT __attribute__((visibility("default")))
+
+EXPORT std::string plan_from_sas(const std::string& sas, const std::string& search_strategy);
+
+#endif //PLANNER_H
