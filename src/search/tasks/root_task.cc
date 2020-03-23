@@ -494,7 +494,6 @@ void RootTask::convert_state_values(
 }
 
 void read_root_task(istream &in) {
-    assert(!g_root_task);
     g_root_task = make_shared<RootTask>(in);
 }
 
