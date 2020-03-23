@@ -27,6 +27,9 @@ public:
     void save_plan(
         const Plan &plan, const TaskProxy &task_proxy,
         bool generates_multiple_plan_files = false);
+
+    /* Save plan to an output stream. Does not support multiple plan files. */
+    void save_plan_to(const Plan &plan, const TaskProxy &task_proxy, std::ostream& out);
 };
 
 extern int calculate_plan_cost(const Plan &plan, const TaskProxy &task_proxy);

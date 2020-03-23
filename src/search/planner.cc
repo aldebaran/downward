@@ -1,3 +1,4 @@
+#include "planner.h"
 #include "command_line.h"
 #include "option_parser.h"
 #include "search_engine.h"
@@ -10,6 +11,7 @@
 #include "utils/timer.h"
 
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using utils::ExitCode;
@@ -67,4 +69,60 @@ int main(int argc, const char **argv) {
         : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
     utils::report_exit_code_reentrant(exitcode);
     return static_cast<int>(exitcode);
+}
+
+std::string plan_from_sas(const std::string& sas, const std::string& search_strategy) {
+    // Parse the input SAS.
+    std::istringstream string_input(sas);
+    std::istream input(string_input.rdbuf());
+    cout << "reading input... [t=" << utils::g_timer << "]" << endl;
+    tasks::read_root_task(input);
+    cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
+    TaskProxy task_proxy(*tasks::g_root_task);
+
+    // Setup the search engine according to provided strategy.
+    options::Registry registry(*options::RawRegistry::instance());
+    options::Predefinitions predefinitions;
+    static const bool dry_run = false;
+    OptionParser parser(sanitize_arg_string(search_strategy), registry, predefinitions, dry_run);
+    shared_ptr<SearchEngine> engine = parser.start_parsing<shared_ptr<SearchEngine>>();
+
+    if (!engine) {
+        throw std::runtime_error(
+                std::string("Search engine specification \"")
+                + search_strategy + "was not recognized");
+    }
+
+    PlanManager &plan_manager = engine->get_plan_manager();
+    static const int num_previously_generated_plans = 0;
+    plan_manager.set_num_previously_generated_plans(num_previously_generated_plans);
+    static const bool is_part_of_anytime_portfolio = false;
+    plan_manager.set_is_part_of_anytime_portfolio(is_part_of_anytime_portfolio);
+    utils::Timer search_timer;
+    engine->search();
+    search_timer.stop();
+    utils::g_timer.stop();
+    engine->print_statistics();
+    cout << "Search time: " << search_timer << endl;
+    cout << "Total time: " << utils::g_timer << endl;
+
+    switch (engine->get_status()) {
+        case IN_PROGRESS:
+            assert(false && "search is still in progress");
+            throw std::runtime_error("search is still in progress");
+        case TIMEOUT:
+            throw std::runtime_error("search took too long");
+        case FAILED:
+            throw std::runtime_error("search failed, no solution found");
+        case SOLVED:
+            break;
+    }
+
+    if (!engine->found_solution()) {
+        throw std::runtime_error("no solution found");
+    }
+
+    std::stringstream plan_ss;
+    plan_manager.save_plan_to(engine->get_plan(), task_proxy, plan_ss);
+    return plan_ss.str();
 }
