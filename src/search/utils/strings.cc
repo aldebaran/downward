@@ -7,13 +7,16 @@ using namespace std;
 
 namespace utils {
 StringOperationError::StringOperationError(const string &msg)
-    : msg(msg) {
+    : _what(msg) {
 }
 
 void StringOperationError::print() const {
-    cerr << msg << endl;
+    cerr << what() << endl;
 }
 
+const char* StringOperationError::what() const noexcept {
+    return _what.c_str();
+}
 
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
