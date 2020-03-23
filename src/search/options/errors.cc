@@ -1,34 +1,42 @@
 #include "errors.h"
+#include <sstream>
 
 using namespace std;
 
 namespace options {
-OptionParserError::OptionParserError(const string &msg)
-    : msg(msg) {
+OptionParserError::OptionParserError(const string &msg) {
+    stringstream ss;
+    ss << "option parser error: " << msg;
+    this->_what = ss.str();
 }
 
 void OptionParserError::print() const {
-    cerr << "option parser error: " << msg << endl;
+    cerr << what() << endl;
 }
 
+const char* OptionParserError::what() const noexcept {
+    return _what.c_str();
+}
 
 ParseError::ParseError(
-    const string &msg, const ParseTree &parse_tree, const string &substring)
-    : msg(msg),
-      parse_tree(parse_tree),
-      substring(substring) {
+    const string &msg, const ParseTree &parse_tree, const string &substring) {
+    stringstream ss;
+    ss << "parse error: " << endl
+       << msg << " at: " << endl;
+    kptree::print_tree_bracketed<ParseNode>(parse_tree, ss);
+    if (!substring.empty()) {
+        ss << " (cannot continue parsing after \"" << substring << "\")";
+    }
+    _what = ss.str();
 }
 
 void ParseError::print() const {
-    cerr << "parse error: " << endl
-         << msg << " at: " << endl;
-    kptree::print_tree_bracketed<ParseNode>(parse_tree, cerr);
-    if (!substring.empty()) {
-        cerr << " (cannot continue parsing after \"" << substring << "\")";
-    }
-    cerr << endl;
+    cerr << what() << endl;
 }
 
+const char* ParseError::what() const noexcept {
+    return _what.c_str();
+}
 
 string get_demangling_hint(const string &type_name) {
     return "To retrieve the demangled C++ type for gcc/clang, you can call \n"

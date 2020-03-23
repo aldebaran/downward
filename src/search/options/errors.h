@@ -20,23 +20,23 @@
 
 namespace options {
 class OptionParserError : public utils::Exception {
-    std::string msg;
+    std::string _what;
 public:
     explicit OptionParserError(const std::string &msg);
 
-    virtual void print() const override;
+    void print() const override;
+    const char* what() const noexcept override;
 };
 
 
 class ParseError : public utils::Exception {
-    std::string msg;
-    ParseTree parse_tree;
-    std::string substring;
+    std::string _what;
 public:
     ParseError(const std::string &error, const ParseTree &parse_tree,
                const std::string &substring = "");
 
     virtual void print() const override;
+    const char* what() const noexcept override;
 };
 
 extern std::string get_demangling_hint(const std::string &type_name);
