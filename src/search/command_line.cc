@@ -14,16 +14,21 @@
 
 using namespace std;
 
-ArgError::ArgError(const string &msg)
-    : msg(msg) {
+ArgError::ArgError(const string &msg) {
+    stringstream ss;
+    ss << "argument error: " << msg;
+    _what = ss.str();
 }
 
 void ArgError::print() const {
-    cerr << "argument error: " << msg << endl;
+    cerr << what() << endl;
 }
 
+const char* ArgError::what() const noexcept {
+    return _what.c_str();
+}
 
-static string sanitize_arg_string(string s) {
+string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
     // Convert string to lower case.

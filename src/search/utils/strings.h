@@ -8,11 +8,11 @@
 
 namespace utils {
 class StringOperationError : public utils::Exception {
-    std::string msg;
+    std::string _what;
 public:
     explicit StringOperationError(const std::string &msg);
-
     virtual void print() const override;
+    virtual const char* what() const noexcept override;
 };
 
 extern void lstrip(std::string &s);
