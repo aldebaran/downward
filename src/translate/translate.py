@@ -740,9 +740,9 @@ def translate(
     options.layer_strategy = layer_strategy
     return translate_using_options()
 
-def translate_from_strings(domain, task):
+def translate_from_strings(domain, task, **kwargs):
     """Translate the given PDDL into SAS, from a string and using default options."""
-    return translate(domain.splitlines(), task.splitlines())
+    return translate(domain.splitlines(), task.splitlines(), **kwargs)
 
 def main():
     """Translates using the the command-line arguments."""
